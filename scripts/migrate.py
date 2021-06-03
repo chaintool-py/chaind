@@ -7,10 +7,6 @@ import logging
 import alembic
 from alembic.config import Config as AlembicConfig
 import confini
-from xdg.BaseDirectory import (
-        xdg_data_dirs,
-        load_first_config,
-    )
 import chainqueue.db
 import chainsyncer.db
 
@@ -27,7 +23,7 @@ default_migrations_dir = os.path.join(dbdir, 'migrations')
 env = Environment(env=os.environ)
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('-c', type=str, default=env.config_dir, help='config file')
+argparser.add_argument('-c', type=str, default=env.config_dir, help='config directory')
 argparser.add_argument('--env-prefix', default=os.environ.get('CONFINI_ENV_PREFIX'), dest='env_prefix', type=str, help='environment prefix for variables to overwrite configuration')
 argparser.add_argument('--data-dir', dest='data_dir', type=str, default=env.data_dir, help='data directory')
 argparser.add_argument('--migrations-dir', dest='migrations_dir', default=default_migrations_dir, type=str, help='path to alembic migrations directory')
@@ -42,6 +38,7 @@ elif args.v:
     logging.getLogger().setLevel(logging.INFO)
 
 # process config
+logg.debug('loading config from {}'.format(args.c))
 config = confini.Config(args.c, args.env_prefix)
 config.process()
 args_override = {
