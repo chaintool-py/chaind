@@ -8,7 +8,7 @@ Create Date: 2021-06-03 13:11:24.579148
 from alembic import op
 import sqlalchemy as sa
 
-from chainqueue.db.migrations.sqlalchemy import (
+from chainqueue.db.migrations.default.export import (
     chainqueue_upgrade,
     chainqueue_downgrade,
     )
