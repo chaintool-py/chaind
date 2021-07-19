@@ -18,6 +18,7 @@ logg = logging.getLogger()
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 dbdir = os.path.join(rootdir, 'chaind', 'db')
+configdir = os.path.join(rootdir, 'chaind', 'data', 'config')
 default_migrations_dir = os.path.join(dbdir, 'migrations')
 
 env = Environment(env=os.environ)
@@ -39,7 +40,7 @@ elif args.v:
 
 # process config
 logg.debug('loading config from {}'.format(args.c))
-config = confini.Config(args.c, args.env_prefix)
+config = confini.Config(configdir, args.env_prefix, override_dirs=[args.c])
 config.process()
 args_override = {
             'SESSION_DATA_DIR': getattr(args, 'data_dir'),
@@ -47,7 +48,7 @@ args_override = {
 config.dict_override(args_override, 'cli args')
 
 if config.get('DATABASE_ENGINE') == 'sqlite':
-    config.add(os.path.join(config.get('SESSION_DATA_DIR'), config.get('DATABASE_NAME')), 'DATABASE_NAME', True)
+    config.add(os.path.join(config.get('SESSION_DATA_DIR'), config.get('DATABASE_NAME') + '.sqlite'), 'DATABASE_NAME', True)
  
 config.censor('PASSWORD', 'DATABASE')
 
