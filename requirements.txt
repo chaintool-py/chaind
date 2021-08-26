@@ -1,5 +1,5 @@
 chainlib>=0.0.9a2,<=0.1.0
-chainqueue>=0.0.4a3,<=0.0.4
+chainqueue>=0.0.4a4,<=0.0.4
 chainsyncer>=0.0.6a1,<=0.0.6
 confini>=0.4.1a1,<0.5.0
 crypto-dev-signer>=0.4.15a1,<0.5.0
