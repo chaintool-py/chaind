@@ -1,5 +1,5 @@
 # external imports
-from chainqueue.sql.query import get_tx
+from chainqueue.sql.query import get_otx
 
 
 class SessionIndex:
@@ -9,7 +9,7 @@ class SessionIndex:
 
 
     def add(self, chain_spec, tx_hash, session=None):
-        tx = get_tx(chain_spec, tx_hash, session=session)
+        tx = get_otx(chain_spec, tx_hash, session=session)
         session.execute("INSERT INTO session (otx_id, session) VALUES ({},'{}')".format(tx['otx_id'], self.id))
         session.flush()
 
