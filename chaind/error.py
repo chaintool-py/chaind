@@ -1,0 +1,2 @@
+class TxSourceError(Exception):
+    pass
