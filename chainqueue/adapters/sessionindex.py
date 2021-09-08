@@ -2,7 +2,10 @@
 import datetime
 
 # external imports
-from hexathon import add_0x
+from hexathon import (
+        add_0x,
+        strip_0x,
+        )
 from chainqueue.adapters.base import Adapter
 from chainqueue.enum import StatusBits
 
@@ -14,7 +17,8 @@ class SessionIndexAdapter(Adapter):
         self.session_index_backend = session_index_backend
 
 
-    def add(self, bytecode, chain_spec, session=None):
+    def add(self, tx_raw_signed_hex, chain_spec, session=None):
+        bytecode = bytes.fromhex(strip_0x(tx_raw_signed_hex))
         tx = self.translate(bytecode, chain_spec)
         r = self.backend.create(chain_spec, tx['nonce'], tx['from'], tx['hash'], add_0x(bytecode.hex()), session=session)
         if r:
@@ -38,4 +42,6 @@ class SessionIndexAdapter(Adapter):
         return txs
 
 
-
+    def get(self, tx_hash, chain_spec, session=None):
+        tx_summary = self.backend.get_otx(chain_spec, tx_hash, session=session)
+        return tx_summary['signed_tx']
