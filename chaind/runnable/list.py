@@ -16,7 +16,10 @@ from chainqueue.sql.backend import SQLBackend
 from chaind.sql.session import SessionIndex
 from chainqueue.adapters.sessionindex import SessionIndexAdapter
 from chainqueue.cli import Outputter
-from chainqueue.enum import StatusBits
+from chainqueue.enum import (
+        StatusBits,
+        all_errors,
+        )
 
 
 logging.basicConfig(level=logging.WARNING)

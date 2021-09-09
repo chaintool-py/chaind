@@ -1,4 +1,4 @@
-chainlib>=0.0.9a3,<=0.1.0
+chainlib>=0.0.9a7,<=0.1.0
 chainqueue>=0.0.5a3,<=0.0.5
 chainsyncer>=0.0.6a3,<=0.0.6
 confini>=0.4.1a1,<0.5.0
