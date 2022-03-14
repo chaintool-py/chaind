@@ -1,3 +1,6 @@
+# standard imports
+import logging
+
 # external imports
 from chainlib.error import RPCException
 from chainqueue import (
@@ -10,6 +13,8 @@ from chainqueue.store.fs import (
         CounterStore,
         )
 from shep.store.file import SimpleFileStoreFactory
+
+logg = logging.getLogger(__name__)
 
 
 class ChaindFsAdapter:
@@ -26,8 +31,8 @@ class ChaindFsAdapter:
 
     def put(self, signed_tx):
         cache_tx = self.deserialize(signed_tx)
-        self.store.put(cache_tx.tx_hash, signed_tx)
-        return cache_tx.tx_hash
+        self.store.put(cache_tx.hash, signed_tx)
+        return cache_tx.hash
 
 
     def get(self, tx_hash):
@@ -45,6 +50,14 @@ class ChaindFsAdapter:
 
     def deferred(self):
         return self.store.deferred()
+
+
+    def succeed(self, block, tx):
+        return self.store.final(tx.hash, block, tx, error=False)
+
+
+    def fail(self, block, tx):
+        return self.store.final(tx.hash, block, tx, error=True)
 
 
     def enqueue(self, tx_hash):

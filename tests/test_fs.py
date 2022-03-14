@@ -10,10 +10,12 @@ import hashlib
 from chainlib.chain import ChainSpec
 from chainqueue.cache import CacheTokenTx
 from chainlib.error import RPCException
+from chainlib.status import Status as TxStatus
 
 # local imports
 from chaind.adapters.new import ChaindFsAdapter
 from chaind.driver import QueueDriver
+from chaind.filter import StateFilter
 
 logging.basicConfig(level=logging.DEBUG)
 logg = logging.getLogger()
@@ -26,7 +28,7 @@ class MockCacheAdapter(CacheTokenTx):
         h = hashlib.sha256()
         h.update(v.encode('utf-8'))
         z = h.digest()
-        tx.tx_hash = z.hex()
+        tx.hash = z.hex()
         return tx
 
 
@@ -44,6 +46,14 @@ class MockDispatcher:
         if v not in self.fails:
             raise RPCException('{} is in fails'.format(v))
         pass
+
+
+class MockTx:
+
+    def __init__(self, tx_hash, status=TxStatus.SUCCESS):
+        self.hash = tx_hash
+        self.status = status
+
 
 
 class TestChaindFs(unittest.TestCase):
@@ -87,6 +97,28 @@ class TestChaindFs(unittest.TestCase):
         drv.process()
         txs = self.adapter.upcoming()
         self.assertEqual(len(txs), 1)
+
+
+    def test_fs_filter(self):
+        drv = QueueDriver(self.adapter)
+
+        data = os.urandom(128).hex()
+        hsh = self.adapter.put(data)
+        
+        fltr = StateFilter(self.adapter)
+        tx = MockTx(hsh)
+        fltr.filter(None, None, tx)
+
+
+    def test_fs_filter_fail(self):
+        drv = QueueDriver(self.adapter)
+
+        data = os.urandom(128).hex()
+        hsh = self.adapter.put(data)
+        
+        fltr = StateFilter(self.adapter)
+        tx = MockTx(hsh, TxStatus.ERROR)
+        fltr.filter(None, None, tx)
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ class QueueDriver:
         for i in range(c):
             self.adapter.enqueue(txs[i])
             if self.throttler != None:
-                self.throttler.inc()
+                self.throttler.inc(txs[i].hash)
         return c
 
 
