@@ -3,10 +3,7 @@ import logging
 
 # external imports
 from chainlib.error import RPCException
-from chainqueue import (
-        Status,
-        Store as QueueStore,
-        )
+from chainqueue import Status
 from chainqueue.cache import Cache
 from chainqueue.store.fs import (
         IndexStore,
@@ -14,19 +11,20 @@ from chainqueue.store.fs import (
         )
 from shep.store.file import SimpleFileStoreFactory
 
+# local imports
+from .base import ChaindAdapter
+
 logg = logging.getLogger(__name__)
 
 
-class ChaindFsAdapter:
+class ChaindFsAdapter(ChaindAdapter):
 
     def __init__(self, chain_spec, path, deserializer, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32):
         factory = SimpleFileStoreFactory(path).add
         state_store = Status(factory)
         index_store = IndexStore(path, digest_bytes=digest_bytes)
         counter_store = CounterStore(path)
-        self.store = QueueStore(chain_spec, state_store, index_store, counter_store, cache=cache)
-        self.deserialize = deserializer
-        self.dispatcher = dispatcher
+        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, deserializer, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0)
 
 
     def put(self, signed_tx):
