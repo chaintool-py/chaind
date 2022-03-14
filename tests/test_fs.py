@@ -62,7 +62,8 @@ class TestChaindFs(unittest.TestCase):
         self.chain_spec = ChainSpec('foo', 'bar', 42, 'baz')
         self.path = tempfile.mkdtemp()
         self.dispatcher = MockDispatcher()
-        self.adapter = ChaindFsAdapter(self.chain_spec, self.path, MockCacheAdapter().deserialize, self.dispatcher)
+        deserializer = MockCacheAdapter().deserialize
+        self.adapter = ChaindFsAdapter(self.chain_spec, self.path, deserializer, self.dispatcher)
 
 
     def tearDown(self):
