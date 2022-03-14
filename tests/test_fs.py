@@ -13,7 +13,7 @@ from chainlib.error import RPCException
 from chainlib.status import Status as TxStatus
 
 # local imports
-from chaind.adapters.new import ChaindFsAdapter
+from chaind.adapters.fs import ChaindFsAdapter
 from chaind.driver import QueueDriver
 from chaind.filter import StateFilter
 
