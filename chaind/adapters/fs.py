@@ -24,7 +24,7 @@ class ChaindFsAdapter(ChaindAdapter):
         state_store = Status(factory)
         index_store = IndexStore(path, digest_bytes=digest_bytes)
         counter_store = CounterStore(path)
-        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, deserializer, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0)
+        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, deserializer, dispatcher, cache=cache, pending_retry_threshold=pending_retry_threshold, error_retry_threshold=error_retry_threshold)
 
 
     def put(self, signed_tx):
