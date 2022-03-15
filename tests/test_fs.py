@@ -1,69 +1,34 @@
 # standard imports
 import os
-import tempfile
 import unittest
 import shutil
 import logging
-import hashlib
 
 # external imports
-from chainlib.chain import ChainSpec
-from chainqueue.cache import CacheTokenTx
-from chainlib.error import RPCException
 from chainlib.status import Status as TxStatus
 
 # local imports
-from chaind.adapters.fs import ChaindFsAdapter
 from chaind.driver import QueueDriver
 from chaind.filter import StateFilter
+
+# test imports
+from chaind.unittest.common import (
+    MockTx,
+    MockCacheAdapter,
+    TestChaindFsBase,
+    )
+
 
 logging.basicConfig(level=logging.DEBUG)
 logg = logging.getLogger()
 
 
-class MockCacheAdapter(CacheTokenTx):
 
-    def deserialize(self, v):
-        tx = CacheTokenTx()
-        h = hashlib.sha256()
-        h.update(v.encode('utf-8'))
-        z = h.digest()
-        tx.hash = z.hex()
-        return tx
-
-
-class MockDispatcher:
-
-    def __init__(self):
-        self.fails = []
-
-
-    def add_fail(self, v):
-        self.fails.append(v)
-
-
-    def send(self, v):
-        if v not in self.fails:
-            raise RPCException('{} is in fails'.format(v))
-        pass
-
-
-class MockTx:
-
-    def __init__(self, tx_hash, status=TxStatus.SUCCESS):
-        self.hash = tx_hash
-        self.status = status
-
-
-
-class TestChaindFs(unittest.TestCase):
+class TestChaindFs(TestChaindFsBase):
 
     def setUp(self):
-        self.chain_spec = ChainSpec('foo', 'bar', 42, 'baz')
-        self.path = tempfile.mkdtemp()
-        self.dispatcher = MockDispatcher()
-        deserializer = MockCacheAdapter().deserialize
-        self.adapter = ChaindFsAdapter(self.chain_spec, self.path, deserializer, self.dispatcher)
+        self.cache_adapter = MockCacheAdapter
+        super(TestChaindFs, self).setUp()
 
 
     def tearDown(self):

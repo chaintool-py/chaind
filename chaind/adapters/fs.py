@@ -19,18 +19,18 @@ logg = logging.getLogger(__name__)
 
 class ChaindFsAdapter(ChaindAdapter):
 
-    def __init__(self, chain_spec, path, deserializer, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32):
+    def __init__(self, chain_spec, path, cache_adapter, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32):
         factory = SimpleFileStoreFactory(path).add
         state_store = Status(factory)
         index_store = IndexStore(path, digest_bytes=digest_bytes)
         counter_store = CounterStore(path)
-        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, deserializer, dispatcher, cache=cache, pending_retry_threshold=pending_retry_threshold, error_retry_threshold=error_retry_threshold)
+        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, cache_adapter, dispatcher, cache=cache, pending_retry_threshold=pending_retry_threshold, error_retry_threshold=error_retry_threshold)
 
 
     def put(self, signed_tx):
-        cache_tx = self.deserialize(signed_tx)
-        self.store.put(cache_tx.hash, signed_tx)
-        return cache_tx.hash
+        #cache_tx = self.deserialize(signed_tx)
+        (s, tx_hash,) = self.store.put(signed_tx, cache_adapter=self.cache_adapter)
+        return tx_hash
 
 
     def get(self, tx_hash):
