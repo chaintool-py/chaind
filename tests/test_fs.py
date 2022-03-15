@@ -28,6 +28,7 @@ class TestChaindFs(TestChaindFsBase):
 
     def setUp(self):
         self.cache_adapter = MockCacheAdapter
+        self.dispatcher = MockDispatcher()
         super(TestChaindFs, self).setUp()
 
 

@@ -50,6 +50,5 @@ class TestChaindFsBase(unittest.TestCase):
     def setUp(self):
         self.chain_spec = ChainSpec('foo', 'bar', 42, 'baz')
         self.path = tempfile.mkdtemp()
-        self.dispatcher = MockDispatcher()
         self.adapter = ChaindFsAdapter(self.chain_spec, self.path, self.cache_adapter, self.dispatcher)
 
