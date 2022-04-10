@@ -105,4 +105,15 @@ class SessionController:
             raise ClientInputError()
 
         logg.info('recv {} bytes'.format(len(data)))
-        return data
+        return (srvs, data,)
+
+
+    def respond_put(self, srvs, r, extra_data=None):
+        v = r.to_bytes(4, byteorder='big')
+        if extra_data != None:
+            v += strip_0x(extra_data).encode('utf-8')
+        try:
+            srvs.send(v)
+            logg.debug('{} bytes sent'.format(len(v)))
+        except BrokenPipeError:
+            logg.debug('they just hung up. how rude.')
