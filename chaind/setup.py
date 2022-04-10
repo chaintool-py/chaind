@@ -12,7 +12,6 @@ from xdg.BaseDirectory import (
         save_config_path,
         )
 
-
 class Environment:
 
     def __init__(self, domain=None, session=None, env={}):
