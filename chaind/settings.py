@@ -4,20 +4,18 @@ import os
 
 # external imports
 from chainlib.chain import ChainSpec
-from chainlib.eth.block import block_latest
-from hexathon import (
-        to_int as hex_to_int,
-        strip_0x,
-        )
+from chainsyncer.settings import ChainsyncerSettings
 
 logg = logging.getLogger(__name__)
 
 
-class ChaindSettings:
+class ChaindSettings(ChainsyncerSettings):
 
-    def __init__(self):
+    def __init__(self, include_sync=False, include_queue=False):
         self.o = {}
         self.get = self.o.get
+        self.include_sync = include_sync
+        self.include_queue = include_queue
 
 
     def process_common(self, config):
@@ -25,37 +23,7 @@ class ChaindSettings:
         self.o['SOCKET_PATH'] = config.get('SESSION_SOCKET_PATH')
 
    
-    def process_sync_range(self, config):
-        o = block_latest()
-        r = self.o['RPC'].do(o)
-        block_offset = int(strip_0x(r), 16) + 1
-        logg.info('network block height at startup is {}'.format(block_offset))
-
-        keep_alive = False
-        session_block_offset = 0
-        block_limit = 0
-        session_block_offset = int(config.get('SYNCER_OFFSET'))
-
-        until = int(config.get('SYNCER_LIMIT'))
-        if until > 0:
-            if until <= session_block_offset:
-                raise ValueError('sync termination block number must be later than offset ({} >= {})'.format(session_block_offset, until))
-            block_limit = until
-        else:
-            keep_alive=True
-            block_limit = -1
-
-        if session_block_offset == -1:
-            session_block_offset = block_offset
-        elif not config.true('_KEEP_ALIVE'):
-            if block_limit == 0:
-                lock_limit = block_offset
-    
-        self.o['SYNCER_OFFSET'] = session_block_offset
-        self.o['SYNCER_LIMIT'] = block_limit
-
-
-    def process_sync_session(self, config):
+    def process_session(self, config):
         session_id = config.get('SESSION_ID')
 
         base_dir = os.getcwd()
@@ -109,13 +77,14 @@ class ChaindSettings:
 
     def process_sync(self, config):
         self.process_sync_interface(config)
-        self.process_sync_session(config)
         self.process_sync_range(config)
 
                 
     def process(self, config):
         self.process_common(config)
-        self.process_sync(config)
+        self.process_session(config)
+        if self.include_sync:
+            self.process_sync(config)
 
 
     def __str__(self):
