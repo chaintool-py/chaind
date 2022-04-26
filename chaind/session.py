@@ -117,3 +117,4 @@ class SessionController:
             logg.debug('{} bytes sent'.format(len(v)))
         except BrokenPipeError:
             logg.debug('they just hung up. how rude.')
+        srvs.close()
