@@ -79,12 +79,26 @@ class ChaindSettings(ChainsyncerSettings):
         self.process_sync_interface(config)
         self.process_sync_range(config)
 
+
+    def process_socket(self, config):
+        socket_path = config.get('SESSION_SOCKET_PATH')
+        if socket_path == None:
+            socket_path = os.path.join(self.o['SESSION_RUNTIME_DIR'], 'chaind.sock')
+        self.o['SESSION_SOCKET_PATH'] = socket_path
+
+
+    def process_dispatch(self, config):
+        self.o['SESSION_DISPATCH_DELAY'] = 0.01
+
                 
     def process(self, config):
         self.process_common(config)
         self.process_session(config)
+        self.process_socket(config)
         if self.include_sync:
             self.process_sync(config)
+        if self.include_queue:
+            self.process_dispatch(config)
 
 
     def __str__(self):
