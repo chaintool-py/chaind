@@ -21,6 +21,7 @@ class StateFilter(SyncFilter):
         except NotLocalTxError:
             logg.debug('skipping not local transaction {}'.format(tx.hash))
             return False
+
         if tx.status == TxStatus.SUCCESS:
             self.adapter.succeed(block, tx)
         else:

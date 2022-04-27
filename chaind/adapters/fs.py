@@ -28,7 +28,6 @@ class ChaindFsAdapter(ChaindAdapter):
 
 
     def put(self, signed_tx):
-        #cache_tx = self.deserialize(signed_tx)
         (s, tx_hash,) = self.store.put(signed_tx, cache_adapter=self.cache_adapter)
         return tx_hash
 

@@ -1,6 +1,7 @@
 # standard imports
 import logging
 import os
+import uuid
 
 # external imports
 from chainlib.chain import ChainSpec
@@ -20,9 +21,8 @@ class ChaindSettings(ChainsyncerSettings):
 
     def process_common(self, config):
         self.o['CHAIN_SPEC'] = ChainSpec.from_chain_str(config.get('CHAIN_SPEC'))
-        self.o['SOCKET_PATH'] = config.get('SESSION_SOCKET_PATH')
 
-   
+
     def process_session(self, config):
         session_id = config.get('SESSION_ID')
 
@@ -55,7 +55,7 @@ class ChaindSettings(ChainsyncerSettings):
             fp = os.path.join(data_engine_dir, 'default')
             os.symlink(session_dir, fp)
 
-        data_dir = os.path.join(session_dir, 'sync')
+        data_dir = os.path.join(session_dir, config.get('CHAIND_COMPONENT'))
         os.makedirs(data_dir, exist_ok=True)
 
         # create volatile dir
@@ -63,10 +63,11 @@ class ChaindSettings(ChainsyncerSettings):
         runtime_dir = config.get('SESSION_RUNTIME_DIR')
         if runtime_dir == None:
             runtime_dir = os.path.join('/run', 'user', str(uid), 'chaind')
-        runtime_dir = os.path.join(runtime_dir, config.get('CHAIND_ENGINE'), session_id, 'sync')
+        runtime_dir = os.path.join(runtime_dir, config.get('CHAIND_ENGINE'), session_id, config.get('CHAIND_COMPONENT'))
         os.makedirs(runtime_dir, exist_ok=True)
 
         self.o['SESSION_RUNTIME_DIR'] = runtime_dir
+        self.o['SESSION_DIR'] = session_dir
         self.o['SESSION_DATA_DIR'] = data_dir
         self.o['SESSION_ID'] = session_id
 
@@ -99,6 +100,10 @@ class ChaindSettings(ChainsyncerSettings):
             self.process_sync(config)
         if self.include_queue:
             self.process_dispatch(config)
+
+
+    def dir_for(self, k):
+        return os.path.join(self.o['SESSION_DIR'], k)
 
 
     def __str__(self):
