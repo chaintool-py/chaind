@@ -4,23 +4,18 @@ import os
 import uuid
 
 # external imports
-from chainlib.chain import ChainSpec
 from chainsyncer.settings import ChainsyncerSettings
+from chainqueue.settings import ChainqueueSettings
 
 logg = logging.getLogger(__name__)
 
 
-class ChaindSettings(ChainsyncerSettings):
+class ChaindSettings(ChainsyncerSettings, ChainqueueSettings):
 
     def __init__(self, include_sync=False, include_queue=False):
-        self.o = {}
-        self.get = self.o.get
+        super(ChaindSettings, self).__init__()
         self.include_sync = include_sync
         self.include_queue = include_queue
-
-
-    def process_common(self, config):
-        self.o['CHAIN_SPEC'] = ChainSpec.from_chain_str(config.get('CHAIN_SPEC'))
 
 
     def process_session(self, config):
@@ -29,7 +24,7 @@ class ChaindSettings(ChainsyncerSettings):
         base_dir = os.getcwd()
         data_dir = config.get('SESSION_DATA_DIR')
         if data_dir == None:
-            data_dir = os.path.join(base_dir, '.chaind', 'chaind')
+            data_dir = os.path.join(base_dir, '.chaind', 'chaind', self.o.get('CHAIND_BACKEND'))
         data_engine_dir = os.path.join(data_dir, config.get('CHAIND_ENGINE'))
         os.makedirs(data_engine_dir, exist_ok=True)
 
@@ -55,15 +50,17 @@ class ChaindSettings(ChainsyncerSettings):
             fp = os.path.join(data_engine_dir, 'default')
             os.symlink(session_dir, fp)
 
-        data_dir = os.path.join(session_dir, config.get('CHAIND_COMPONENT'))
+        #data_dir = os.path.join(session_dir, config.get('CHAIND_COMPONENT'))
+        data_dir = session_dir
         os.makedirs(data_dir, exist_ok=True)
 
         # create volatile dir
         uid = os.getuid()
         runtime_dir = config.get('SESSION_RUNTIME_DIR')
         if runtime_dir == None:
-            runtime_dir = os.path.join('/run', 'user', str(uid), 'chaind')
-        runtime_dir = os.path.join(runtime_dir, config.get('CHAIND_ENGINE'), session_id, config.get('CHAIND_COMPONENT'))
+            runtime_dir = os.path.join('/run', 'user', str(uid), 'chaind', self.o.get('CHAIND_BACKEND'))
+        #runtime_dir = os.path.join(runtime_dir, config.get('CHAIND_ENGINE'), session_id, config.get('CHAIND_COMPONENT'))
+        runtime_dir = os.path.join(runtime_dir, config.get('CHAIND_ENGINE'), session_id)
         os.makedirs(runtime_dir, exist_ok=True)
 
         self.o['SESSION_RUNTIME_DIR'] = runtime_dir
@@ -91,25 +88,38 @@ class ChaindSettings(ChainsyncerSettings):
     def process_dispatch(self, config):
         self.o['SESSION_DISPATCH_DELAY'] = 0.01
 
-                
+
+    def process_token(self, config):
+        self.o['TOKEN_MODULE'] = config.get('TOKEN_MODULE')
+
+
+    def process_backend(self, config):
+        if self.include_sync and self.include_queue:
+            if self.o['QUEUE_BACKEND'] != self.o['SYNCER_BACKEND']:
+                raise ValueError('queue and syncer backends must match. queue "{}" != syncer "{}"'.format(self.o['QUEUE_BACKEND'], self.o['SYNCER_BACKEND']))
+            self.o['CHAIND_BACKEND'] = self.o['SYNCER_BACKEND']
+        elif self.include_sync:
+            self.o['CHAIND_BACKEND'] = self.o['SYNCER_BACKEND']
+        elif self.include_queue:
+            self.o['CHAIND_BACKEND'] = self.o['QUEUE_BACKEND']
+        else:
+            raise ValueError('at least one backend must be set')
+
+
     def process(self, config):
-        self.process_common(config)
-        self.process_session(config)
-        self.process_socket(config)
+        super(ChaindSettings, self).process(config)
         if self.include_sync:
             self.process_sync(config)
+            self.process_sync_backend(config)
         if self.include_queue:
+            self.process_queue_backend(config)
             self.process_dispatch(config)
+            self.process_token(config)
+
+        self.process_backend(config)
+        self.process_session(config)
+        self.process_socket(config)
 
 
     def dir_for(self, k):
         return os.path.join(self.o['SESSION_DIR'], k)
-
-
-    def __str__(self):
-        ks = list(self.o.keys())
-        ks.sort()
-        s = ''
-        for k in ks:
-            s += '{}: {}\n'.format(k, self.o.get(k))
-        return s
