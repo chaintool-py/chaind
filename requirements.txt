@@ -1,4 +1,4 @@
-chainlib~=0.1.2
+chainlib~=0.1.1
 chainqueue~=0.1.2
 chainsyncer~=0.4.0
 confini~=0.6.0
