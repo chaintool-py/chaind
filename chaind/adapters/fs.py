@@ -58,6 +58,9 @@ class ChaindFsAdapter(ChaindAdapter):
 
 
     def succeed(self, block, tx):
+        if self.store.is_reserved(tx.hash):
+            raise QueueLockError(tx.hash)
+
         return self.store.final(tx.hash, block, tx, error=False)
 
 

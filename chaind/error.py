@@ -16,3 +16,7 @@ class ClientBlockError(BlockingIOError):
 
 class ClientInputError(ValueError):
     pass
+
+
+class QueueLockError(Exception):
+    pass
