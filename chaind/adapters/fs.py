@@ -21,9 +21,9 @@ logg = logging.getLogger(__name__)
 
 class ChaindFsAdapter(ChaindAdapter):
 
-    def __init__(self, chain_spec, path, cache_adapter, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32):
+    def __init__(self, chain_spec, path, cache_adapter, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32, event_callback=None):
         factory = SimpleFileStoreFactory(path).add
-        state_store = Status(factory)
+        state_store = Status(factory, allow_invalid=True, event_callback=event_callback)
         index_path = os.path.join(path, 'tx')
         index_store = IndexStore(index_path, digest_bytes=digest_bytes)
         counter_store = CounterStore(path)
@@ -45,8 +45,13 @@ class ChaindFsAdapter(ChaindAdapter):
         return v[1]
 
 
-    def upcoming(self):
-        return self.store.upcoming()
+    def upcoming(self, limit=0):
+        if limit > 0:
+            r = self.store.by_state(self.store.IN_NETWORK)
+            limit -= len(r)
+            if limit <= 0:
+                return []
+        return self.store.upcoming(limit=limit)
 
 
     def pending(self):
@@ -55,6 +60,10 @@ class ChaindFsAdapter(ChaindAdapter):
 
     def deferred(self):
         return self.store.deferred()
+
+
+    def failed(self):
+        return self.store.failed()
 
 
     def succeed(self, block, tx):
@@ -66,6 +75,10 @@ class ChaindFsAdapter(ChaindAdapter):
 
     def fail(self, block, tx):
         return self.store.final(tx.hash, block, tx, error=True)
+
+
+    def sendfail(self):
+        return self.store.fail(tx.hash)
 
 
     def enqueue(self, tx_hash):

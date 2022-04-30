@@ -1,5 +1,5 @@
 chainlib~=0.1.1
-chainqueue~=0.1.5
+chainqueue~=0.1.6
 chainsyncer~=0.4.2
 confini~=0.6.0
 funga~=0.5.2

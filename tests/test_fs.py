@@ -15,13 +15,12 @@ from chaind.filter import StateFilter
 from chaind.unittest.common import (
     MockTx,
     MockCacheAdapter,
-    TestChaindFsBase,
+    MockDispatcher,
     )
-
+from chaind.unittest.fs import TestChaindFsBase
 
 logging.basicConfig(level=logging.DEBUG)
 logg = logging.getLogger()
-
 
 
 class TestChaindFs(TestChaindFsBase):
@@ -43,12 +42,15 @@ class TestChaindFs(TestChaindFsBase):
         self.assertEqual(data, v)
 
 
-    def test_fs_defer(self):
+    def test_fs_fail(self):
         data = os.urandom(128).hex()
         hsh = self.adapter.put(data)
-        self.dispatcher.add_fail(hsh)
-        self.adapter.dispatch(hsh)
-        txs = self.adapter.deferred()
+        self.dispatcher.add_fail(data)
+
+        r = self.adapter.dispatch(hsh)
+        self.assertFalse(r)
+
+        txs = self.adapter.failed()
         self.assertEqual(len(txs), 1)
 
 
@@ -86,6 +88,26 @@ class TestChaindFs(TestChaindFsBase):
         fltr = StateFilter(self.adapter)
         tx = MockTx(hsh, TxStatus.ERROR)
         fltr.filter(None, None, tx)
+
+
+    def test_upcoming(self):
+        drv = QueueDriver(self.adapter)
+
+        txs = []
+        for i in range(10):
+            data = os.urandom(128).hex()
+            hsh = self.adapter.put(data)
+            txs.append(hsh)
+            self.adapter.enqueue(hsh)
+
+        r = self.adapter.upcoming(limit=5)
+        self.assertEqual(len(r), 5)
+
+        r = self.adapter.dispatch(txs[0])
+        self.assertTrue(r)
+
+        r = self.adapter.upcoming(limit=5)
+        self.assertEqual(len(r), 4)
 
 
 if __name__ == '__main__':
