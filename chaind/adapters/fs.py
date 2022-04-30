@@ -47,7 +47,7 @@ class ChaindFsAdapter(ChaindAdapter):
 
     def upcoming(self, limit=0):
         if limit > 0:
-            r = self.store.by_state(self.store.IN_NETWORK)
+            r = self.store.by_state(state=self.store.IN_NETWORK, not_state=self.store.FINAL)
             limit -= len(r)
             if limit <= 0:
                 return []
