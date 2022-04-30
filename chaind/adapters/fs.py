@@ -10,6 +10,7 @@ from chainqueue.store.fs import (
         IndexStore,
         CounterStore,
         )
+from chainqueue.error import BackendIntegrityError
 from shep.store.file import SimpleFileStoreFactory
 from shep.error import StateInvalid
 
@@ -42,16 +43,24 @@ class ChaindFsAdapter(ChaindAdapter):
         except StateInvalid as e:
             logg.error('I am just a simple syncer and do not know how to handle the state which the tx {} is in: {}'.format(tx_hash, e))
             return None
+        except FileNotFoundError:
+            pass
+        if v ==None:
+            raise BackendIntegrityError(tx_hash)
         return v[1]
 
 
     def upcoming(self, limit=0):
+        real_limit = 0
+        in_flight = 0
         if limit > 0:
-            r = self.store.by_state(state=self.store.IN_NETWORK, not_state=self.store.FINAL)
-            limit -= len(r)
-            if limit <= 0:
+            in_flight = self.store.by_state(state=self.store.IN_NETWORK, not_state=self.store.FINAL)
+            real_limit = limit - len(in_flight)
+            if real_limit <= 0:
                 return []
-        return self.store.upcoming(limit=limit)
+        r = self.store.upcoming(limit=real_limit)
+        logg.info('upcoming returning {} upcoming from limit {} less {} active in-flight txs'.format(len(r), limit, len(in_flight)))
+        return r
 
 
     def pending(self):

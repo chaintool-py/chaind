@@ -104,7 +104,6 @@ class SessionController:
             logg.error('invalid input "{}"'.format(data_in_str))
             raise ClientInputError()
 
-        logg.info('recv {} bytes'.format(len(data)))
         return (srvs, data,)
 
 
