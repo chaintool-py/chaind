@@ -73,22 +73,25 @@ class StateFilter(SyncFilter):
                     queue_adapter.succeed(block, tx)
                 else:
                     queue_adapter.fail(block, tx)
-                break
                 err = None
+                break
             except QueueLockError as e:
                 logg.debug('queue item {} is blocked, will retry: {}'.format(tx.hash, e))
                 time.sleep(delay)
                 delay *= 2
+                race_attempts = 0
                 err = None
             except FileNotFoundError as e:
                 err = e
                 logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
                 race_attempts += 1
+                time.sleep(self.race_delay)
                 continue
             except NotLocalTxError as e:
                 err = e
                 logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
                 race_attempts += 1
+                time.sleep(self.race_delay)
                 continue
 
         if err != None:

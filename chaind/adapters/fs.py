@@ -1,6 +1,7 @@
 # standard imports
 import logging
 import os
+import time
 
 # external imports
 from chainlib.error import RPCException
@@ -43,6 +44,7 @@ class ChaindFsAdapter(ChaindAdapter):
             try:
                 v = self.store.get(tx_hash)
                 err = None
+                break
             except StateInvalid as e:
                 logg.error('I am just a simple syncer and do not know how to handle the state which the tx {} is in: {}'.format(tx_hash, e))
                 return None
@@ -51,7 +53,7 @@ class ChaindFsAdapter(ChaindAdapter):
                 time.sleep(self.race_delay)
                 logg.debug('queuestore get {} failed, possible race condition (will try again): {}'.format(tx_hash, e))
                 continue
-        if v ==None:
+        if err != None:
             raise BackendIntegrityError(tx_hash)
         return v[1]
 
@@ -101,7 +103,22 @@ class ChaindFsAdapter(ChaindAdapter):
 
 
     def dispatch(self, tx_hash):
-        entry = self.store.send_start(tx_hash)
+        entry = None
+        err = None
+        for i in range(3):
+            try:
+                entry = self.store.send_start(tx_hash)
+                err = None
+                break
+            except FileNotFoundError as e:
+                logg.debug('dispatch failed to find {} in backend, will try again: {}'.format(tx_hash, err))
+                err = e
+                time.sleep(self.race_delay)
+                continue
+
+        if err != None:
+            raise BackendIntegrityError('dispatch failed to find {} in backend: {}'.format(tx_hash, err))
+
         tx_wire = entry.serialize()
 
         r = None

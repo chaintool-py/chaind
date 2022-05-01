@@ -1,5 +1,6 @@
 # standard imports
 import logging
+import time
 
 # external imports
 from chainqueue import Store as QueueStore
@@ -24,7 +25,7 @@ class ChaindAdapter:
                 err = None
                 break
             except FileNotFoundError as e:
-                logg.debug('queuestore instantiation failed, possible race condition (will try again): {}'.format(tx_hash, e))
+                logg.debug('queuestore instantiation failed, possible race condition (will try again): {}'.format(e))
                 err = e
                 time.sleep(self.race_delay)
                 continue
