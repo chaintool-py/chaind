@@ -61,19 +61,40 @@ class StateFilter(SyncFilter):
             raise NotLocalTxError(tx.hash)
 
         delay = 0.01
+        race_attempts = 0
+        err = None
         while True:
             if delay > self.delay_limit:
                 raise QueueLockError('The queue lock for tx {} seems to be stuck. Human meddling needed.'.format(tx.hash))
+            elif race_attempts >= 3:
+                break
             try:
                 if tx.status == TxStatus.SUCCESS:
                     queue_adapter.succeed(block, tx)
                 else:
                     queue_adapter.fail(block, tx)
                 break
+                err = None
             except QueueLockError as e:
                 logg.debug('queue item {} is blocked, will retry: {}'.format(tx.hash, e))
                 time.sleep(delay)
                 delay *= 2
+                err = None
+            except FileNotFoundError as e:
+                err = e
+                logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
+                race_attempts += 1
+                continue
+            except NotLocalTxError as e:
+                err = e
+                logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
+                race_attempts += 1
+                continue
+
+        if err != None:
+            raise BackendIntegrityError('cannot find queue item {} in backend: {}'.format(tx.hash, err))
+
+        logg.info('filter registered {} for {} in {}'.format(tx.status.name, tx.hash, block))
 
         if self.throttler != None:
             self.throttler.dec(tx.hash)

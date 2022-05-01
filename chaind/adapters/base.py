@@ -1,8 +1,13 @@
+# standard imports
+import logging
+
 # external imports
 from chainqueue import Store as QueueStore
 
 # local imports
 from chaind.error import BackendIntegrityError
+
+logg = logging.getLogger(__name__)
 
 
 class ChaindAdapter:
