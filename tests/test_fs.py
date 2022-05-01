@@ -74,7 +74,7 @@ class TestChaindFs(TestChaindFsBase):
         data = os.urandom(128).hex()
         hsh = self.adapter.put(data)
         
-        fltr = StateFilter(self.adapter)
+        fltr = StateFilter(self.chain_spec, self.path, MockCacheAdapter)
         tx = MockTx(hsh)
         fltr.filter(None, None, tx)
 
@@ -85,7 +85,7 @@ class TestChaindFs(TestChaindFsBase):
         data = os.urandom(128).hex()
         hsh = self.adapter.put(data)
         
-        fltr = StateFilter(self.adapter)
+        fltr = StateFilter(self.chain_spec, self.path, MockCacheAdapter)
         tx = MockTx(hsh, TxStatus.ERROR)
         fltr.filter(None, None, tx)
 

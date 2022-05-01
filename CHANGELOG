@@ -1,3 +1,6 @@
+- 0.2.0
+	* primitive race condition handling between fs access of sync and queue
+	* re-enable throttling based on in-flight transaction count
 - 0.1.2
 	* add settings object
 - 0.1.0

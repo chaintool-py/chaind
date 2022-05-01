@@ -5,14 +5,14 @@ import time
 # external imports
 from chainlib.status import Status as TxStatus
 from chainsyncer.filter import SyncFilter
-from chainqueue.error import (
-        NotLocalTxError,
-        BackendIntegrityError,
-        )
+from chainqueue.error import NotLocalTxError
 from chaind.adapters.fs import ChaindFsAdapter
 
 # local imports
-from .error import QueueLockError
+from .error import (
+        QueueLockError,
+        BackendIntegrityError,
+        )
 
 logg = logging.getLogger(__name__)
 
@@ -20,6 +20,7 @@ logg = logging.getLogger(__name__)
 class StateFilter(SyncFilter):
 
     delay_limit = 3.0
+    race_delay = 0.1
 
     def __init__(self, chain_spec, adapter_path, tx_adapter, throttler=None):
         self.chain_spec = chain_spec
@@ -41,6 +42,7 @@ class StateFilter(SyncFilter):
                     )
             except BackendIntegrityError as e:
                 logg.error('adapter instantiation failed: {}, one more try'.format(e))
+                time.sleep(self.race_delay)
                 continue
 
             try:
@@ -50,6 +52,7 @@ class StateFilter(SyncFilter):
                 return False
             except BackendIntegrityError as e:
                 logg.error('adapter instantiation failed: {}, one more try'.format(e))
+                time.sleep(self.race_delay)
                 continue
 
             break

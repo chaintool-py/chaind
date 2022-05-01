@@ -20,3 +20,7 @@ class ClientInputError(ValueError):
 
 class QueueLockError(Exception):
     pass
+
+
+class BackendIntegrityError(Exception):
+    pass
