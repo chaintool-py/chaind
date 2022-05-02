@@ -90,18 +90,18 @@ class ChaindFsAdapter(ChaindAdapter):
     def succeed(self, block, tx):
         if self.store.is_reserved(tx.hash):
             raise QueueLockError(tx.hash)
-
         r = self.store.final(tx.hash, block, tx, error=False)
-        self.store.purge(tx.hash)
+        (k, v) = self.store.get(tx.hash)
+        self.store.purge(k)
         return r
 
 
     def fail(self, block, tx):
         if self.store.is_reserved(tx.hash):
             raise QueueLockError(tx.hash)
-
         r = self.store.final(tx.hash, block, tx, error=True)
-        self.store.purge(tx.hash)
+        (k, v) = self.store.get(tx.hash)
+        self.store.purge(k)
         return r
 
 
