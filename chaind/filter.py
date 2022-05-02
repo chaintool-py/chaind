@@ -7,20 +7,19 @@ from chainlib.status import Status as TxStatus
 from chainsyncer.filter import SyncFilter
 from chainqueue.error import NotLocalTxError
 from chaind.adapters.fs import ChaindFsAdapter
+from shep.error import StateLockedKey
 
 # local imports
 from .error import (
         QueueLockError,
-        BackendIntegrityError,
+        BackendError,
         )
+from chaind.lock import StoreLock
 
 logg = logging.getLogger(__name__)
 
 
 class StateFilter(SyncFilter):
-
-    delay_limit = 3.0
-    race_delay = 0.1
 
     def __init__(self, chain_spec, adapter_path, tx_adapter, throttler=None):
         self.chain_spec = chain_spec
@@ -31,8 +30,9 @@ class StateFilter(SyncFilter):
 
     def filter(self, conn, block, tx, session=None):
         cache_tx = None
-        for i in range(3):
-            queue_adapter = None
+        store_lock = StoreLock()
+        queue_adapter = None
+        while True:
             try:
                 queue_adapter = ChaindFsAdapter(
                     self.chain_spec,
@@ -40,62 +40,52 @@ class StateFilter(SyncFilter):
                     self.tx_adapter,
                     None,
                     )
-            except BackendIntegrityError as e:
+            except BackendError as e:
                 logg.error('adapter instantiation failed: {}, one more try'.format(e))
-                time.sleep(self.race_delay)
+                store_lock.again()
                 continue
+
+            store_lock.reset()
 
             try:
                 cache_tx = queue_adapter.get(tx.hash)
+                break
             except NotLocalTxError:
                 logg.debug('skipping not local transaction {}'.format(tx.hash))
                 return False
-            except BackendIntegrityError as e:
+            except BackendError as e:
                 logg.error('adapter instantiation failed: {}, one more try'.format(e))
-                time.sleep(self.race_delay)
+                queue_adapter = None
+                store_lock.again()
                 continue
-
-            break
 
         if cache_tx == None:
             raise NotLocalTxError(tx.hash)
 
-        delay = 0.01
-        race_attempts = 0
-        err = None
+        store_lock = StoreLock()
+        queue_lock = StoreLock(error=QueueLockError)
         while True:
-            if delay > self.delay_limit:
-                raise QueueLockError('The queue lock for tx {} seems to be stuck. Human meddling needed.'.format(tx.hash))
-            elif race_attempts >= 3:
-                break
             try:
                 if tx.status == TxStatus.SUCCESS:
                     queue_adapter.succeed(block, tx)
                 else:
                     queue_adapter.fail(block, tx)
-                err = None
                 break
             except QueueLockError as e:
                 logg.debug('queue item {} is blocked, will retry: {}'.format(tx.hash, e))
-                time.sleep(delay)
-                delay *= 2
-                race_attempts = 0
-                err = None
+                queue_lock.again()
             except FileNotFoundError as e:
-                err = e
                 logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
-                race_attempts += 1
-                time.sleep(self.race_delay)
+                store_lock.again()
                 continue
             except NotLocalTxError as e:
-                err = e
                 logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
-                race_attempts += 1
-                time.sleep(self.race_delay)
+                store_lock.again()
                 continue
-
-        if err != None:
-            raise BackendIntegrityError('cannot find queue item {} in backend: {}'.format(tx.hash, err))
+            except StateLockedKey as e:
+                logg.debug('queue item {} not found, possible race condition, will retry: {}'.format(tx.hash, e))
+                store_lock.again()
+                continue
 
         logg.info('filter registered {} for {} in {}'.format(tx.status.name, tx.hash, block))
 

@@ -8,12 +8,14 @@ import stat
 from hexathon import strip_0x
 
 # local imports
-from chaind.error import (
+from .error import (
         NothingToDoError,
         ClientGoneError,
         ClientBlockError,
         ClientInputError,
         )
+from .lock import StoreLock
+from .error import BackendError
 
 logg = logging.getLogger(__name__)
 
@@ -59,7 +61,16 @@ class SessionController:
 
 
     def process(self, conn):
-        r = self.processor(self.chain_spec, self.adapter, conn)
+        state_lock = StoreLock()
+        r = None
+        while True:
+            try:
+                r = self.processor(self.chain_spec, self.adapter, conn)
+                break
+            except BackendError as e:
+                state_lock.again(e)
+                continue
+                
         if r > 0:
             self.srv.settimeout(0.1)
         else:

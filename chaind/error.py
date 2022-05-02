@@ -22,5 +22,5 @@ class QueueLockError(Exception):
     pass
 
 
-class BackendIntegrityError(Exception):
+class BackendError(Exception):
     pass
