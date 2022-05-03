@@ -29,8 +29,6 @@ class MockDispatcher:
 
 
     def send(self, v):
-        import sys
-        sys.stderr.write('susu v {} {}\n'.format(v, self.fails))
         if v in self.fails:
             raise RPCException('{} is in fails'.format(v))
         pass
