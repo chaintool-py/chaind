@@ -22,7 +22,7 @@ logg = logging.getLogger(__name__)
 
 class SessionController:
 
-    def __init__(self, config, adapter, processor):
+    def __init__(self, config, processor):
         self.dead = False
         os.makedirs(os.path.dirname(config.get('SESSION_SOCKET_PATH')), exist_ok=True)
         try:
@@ -37,7 +37,6 @@ class SessionController:
         self.srv.settimeout(float(config.get('SESSION_DISPATCH_DELAY')))
         self.processor = processor
         self.chain_spec = config.get('CHAIN_SPEC')
-        self.adapter = adapter
 
 
     def shutdown(self, signo, frame):
@@ -65,7 +64,7 @@ class SessionController:
         r = None
         while True:
             try:
-                r = self.processor(self.chain_spec, self.adapter, conn)
+                r = self.processor(conn)
                 break
             except BackendError as e:
                 state_lock.again(e)

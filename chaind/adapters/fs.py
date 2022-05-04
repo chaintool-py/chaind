@@ -26,13 +26,13 @@ logg = logging.getLogger(__name__)
 
 class ChaindFsAdapter(ChaindAdapter):
 
-    def __init__(self, chain_spec, path, cache_adapter, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32, event_callback=None):
+    def __init__(self, chain_spec, path, cache_adapter, dispatcher, cache=None, pending_retry_threshold=0, error_retry_threshold=0, digest_bytes=32, event_callback=None, store_sync=True):
         factory = SimpleFileStoreFactory(path, use_lock=True).add
         state_store = Status(factory, allow_invalid=True, event_callback=event_callback)
         index_path = os.path.join(path, 'tx')
         index_store = IndexStore(index_path, digest_bytes=digest_bytes)
         counter_store = CounterStore(path)
-        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, cache_adapter, dispatcher, cache=cache, pending_retry_threshold=pending_retry_threshold, error_retry_threshold=error_retry_threshold)
+        super(ChaindFsAdapter, self).__init__(chain_spec, state_store, index_store, counter_store, cache_adapter, dispatcher, cache=cache, pending_retry_threshold=pending_retry_threshold, error_retry_threshold=error_retry_threshold, store_sync=store_sync)
 
 
     def put(self, signed_tx):
