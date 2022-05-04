@@ -135,7 +135,8 @@ class ChaindFsAdapter(ChaindAdapter):
         r = None
         try:
             r = self.dispatcher.send(tx_wire)
-        except RPCException:
+        except RPCException as e:
+            logg.error('dispatch send failed for {}: {}'.format(tx_hash, e))
             self.store.fail(tx_hash)
             return False
 
