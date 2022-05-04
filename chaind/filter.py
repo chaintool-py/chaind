@@ -54,7 +54,7 @@ class StateFilter(SyncFilter):
                 logg.debug('skipping not local transaction {}'.format(tx.hash))
                 return False
             except BackendError as e:
-                logg.error('adapter instantiation failed: {}, one more try'.format(e))
+                logg.error('adapter get failed: {}, one more try'.format(e))
                 queue_adapter = None
                 store_lock.again()
                 continue

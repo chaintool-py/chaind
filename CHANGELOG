@@ -1,3 +1,11 @@
+- 0.2.7
+	* Upgrade chainlib
+- 0.2.6
+	* Deps upgrade
+- 0.2.5
+	* Deps upgrade
+- 0.2.4
+	* Allow omission of state store sync in queue store backend
 - 0.2.2
 	* Fix missing symbol crashes related to race conditions
 - 0.2.1

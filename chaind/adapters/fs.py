@@ -51,11 +51,11 @@ class ChaindFsAdapter(ChaindAdapter):
                 logg.error('I am just a simple syncer and do not know how to handle the state which the tx {} is in: {}'.format(tx_hash, e))
                 return None
             except FileNotFoundError as e:
-                logg.debug('queuestore get {} failed, possible race condition (will try again): {}'.format(tx_hash, e))
+                logg.debug('queuestore get (file missing) {} failed, possible race condition (will try again): {}'.format(tx_hash, e))
                 store_lock.again()
                 continue
             except StateLockedKey as e:
-                logg.debug('queuestore get {} failed, possible race condition (will try again): {}'.format(tx_hash, e))
+                logg.debug('queuestore get (statelock) {} failed, possible race condition (will try again): {}'.format(tx_hash, e))
                 store_lock.again()
                 continue
 

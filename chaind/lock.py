@@ -5,7 +5,7 @@ import time
 from .error import BackendError
 
 BASE_DELAY = 0.01
-BASE_DELAY_LIMIT = 3.0
+BASE_DELAY_LIMIT = 10.0
 
 
 class StoreLock:
