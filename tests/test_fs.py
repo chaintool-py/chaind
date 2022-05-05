@@ -14,6 +14,7 @@ from chaind.filter import StateFilter
 # test imports
 from chaind.unittest.common import (
     MockTx,
+    MockBlock,
     MockCacheAdapter,
     MockDispatcher,
     )
@@ -76,7 +77,8 @@ class TestChaindFs(TestChaindFsBase):
         
         fltr = StateFilter(self.chain_spec, self.path, MockCacheAdapter)
         tx = MockTx(hsh)
-        fltr.filter(None, None, tx)
+        block = MockBlock(42)
+        fltr.filter(None, block, tx)
 
 
     def test_fs_filter_fail(self):
@@ -87,7 +89,8 @@ class TestChaindFs(TestChaindFsBase):
         
         fltr = StateFilter(self.chain_spec, self.path, MockCacheAdapter)
         tx = MockTx(hsh, TxStatus.ERROR)
-        fltr.filter(None, None, tx)
+        block = MockBlock(42)
+        fltr.filter(None, block, tx)
 
 
     def test_upcoming(self):

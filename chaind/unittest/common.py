@@ -39,3 +39,9 @@ class MockTx:
     def __init__(self, tx_hash, status=TxStatus.SUCCESS):
         self.hash = tx_hash
         self.status = status
+
+
+class MockBlock:
+
+    def __init__(self, number):
+        self.number = number
