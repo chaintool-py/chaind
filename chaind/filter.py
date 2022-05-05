@@ -76,7 +76,6 @@ class StateFilter(SyncFilter):
                 break
             except NotLocalTxError:
                 logg.debug('skipping not local transaction {}'.format(tx.hash))
-                self.__stop_adapter()
                 return False
             except BackendError as e:
                 logg.error('adapter get failed: {}, one more try'.format(e))
