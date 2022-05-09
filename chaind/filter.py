@@ -115,7 +115,7 @@ class StateFilter(SyncFilter):
                 queue_adapter = self.__get_adapter(block, force_reload=True)
                 continue
 
-        logg.info('filter registered {} for {} in {}'.format(tx.status_name, tx.hash, block))
+        logg.info('filter registered {} for {} in {}'.format(tx.status.name, tx.hash, block))
 
         if self.throttler != None:
             self.throttler.dec(tx.hash)
