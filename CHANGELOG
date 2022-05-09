@@ -1,3 +1,6 @@
+- 0.2.12
+	* Breaking upgrade of chainlib.
+	* Implement generic block and tx.
 - 0.2.11
 	* Upgrade shep to handle exception in filestore list
 - 0.2.10
