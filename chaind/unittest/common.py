@@ -7,6 +7,11 @@ from chainqueue.cache import CacheTokenTx
 from chainlib.status import Status as TxStatus
 from chainlib.chain import ChainSpec
 from chainlib.error import RPCException
+from chainlib.tx import (
+        Tx,
+        TxResult,
+        )
+from chainlib.block import Block
 
 
 class MockCacheAdapter(CacheTokenTx):
@@ -34,14 +39,17 @@ class MockDispatcher:
         pass
 
 
-class MockTx:
+class MockTx(Tx):
 
     def __init__(self, tx_hash, status=TxStatus.SUCCESS):
-        self.hash = tx_hash
-        self.status = status
+        result = TxResult()
+        result.status = status
+        super(MockTx, self).__init__(result=result)
+        self.set_hash(tx_hash)
 
 
-class MockBlock:
+class MockBlock(Block):
 
     def __init__(self, number):
+        super(MockBlock, self).__init__()
         self.number = number
