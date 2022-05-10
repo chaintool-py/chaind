@@ -4,6 +4,7 @@ import os
 import uuid
 
 # external imports
+from chainlib.settings import ChainSettings
 from chainsyncer.settings import ChainsyncerSettings
 from chainqueue.settings import ChainqueueSettings
 
@@ -106,18 +107,39 @@ class ChaindSettings(ChainsyncerSettings, ChainqueueSettings):
             raise ValueError('at least one backend must be set')
 
 
+    def process_chaind_queue(self, config):
+        if config.get('QUEUE_STATE_PATH') == None:
+            queue_state_dir = self.dir_for('queue')
+            config.add(queue_state_dir, 'QUEUE_STATE_PATH', False)
+            logg.debug('setting queue state path {}'.format(queue_state_dir))
+        
+        self.process_queue_tx(config)
+        self.process_queue_paths(config)
+        if config.get('QUEUE_BACKEND') == 'fs':
+            self.process_queue_backend_fs(config)
+        self.process_queue_backend(config)
+        self.process_queue_store(config)
+
+
     def process(self, config):
-        super(ChaindSettings, self).process(config)
-        if self.include_sync:
-            self.process_sync(config)
-            self.process_sync_backend(config)
+        #super(ChaindSettings, self).process(config)
+        self.process_common(config)
+
         if self.include_queue:
             self.process_queue_backend(config)
-            self.process_dispatch(config)
-            self.process_token(config)
+        if self.include_sync:
+            self.process_sync_backend(config)
 
         self.process_backend(config)
         self.process_session(config)
+
+        if self.include_sync:
+            self.process_sync(config)
+        if self.include_queue:
+            self.process_chaind_queue(config)
+            self.process_dispatch(config)
+            self.process_token(config)
+
         self.process_socket(config)
 
 
