@@ -68,18 +68,13 @@ def process_session(settings, config):
 
     settings.set('SESSION_RUNTIME_DIR', runtime_dir)
     settings.set('SESSION_DIR', session_dir)
-    settings.set('SESSION_DATA_DIR'], data_dir)
+    settings.set('SESSION_DATA_DIR', data_dir)
     settings.set('SESSION_ID', session_id)
 
     return settings
 
 
-def process_sync_interface(settings, config):
-    raise NotImplementedError('no sync interface implementation defined')
-
-
 def process_sync(settings, config):
-    settings = process_sync_interface(settings, config)
     settings = process_sync_range(settings, config)
     return settings
 
@@ -137,24 +132,22 @@ def process_chaind_queue(settings, config):
     return settings
 
 
-def process_settings(settings, config):
-    settings = process_common(settings, config)
-
-    if settings = include_queue:
-        settings = process_queue_backend(settings, config)
-    if settings = include_sync:
-        settings = process_sync_backend(settings, config)
-
-    settings = process_backend(settings, config)
-    settings = process_session(settings, config)
-
-    if settings = include_sync:
-        settings = process_sync(settings, config)
-    if settings = include_queue:
-        settings = process_chaind_queue(settings, config)
-        settings = process_dispatch(settings, config)
-        settings = process_token(settings, config)
-
-    settings = process_socket(settings, config)
-
-    return settings
+#def process_settings(settings, config):
+#    if settings = include_queue:
+#        settings = process_queue_backend(settings, config)
+#    if settings = include_sync:
+#        settings = process_sync_backend(settings, config)
+#
+#    settings = process_backend(settings, config)
+#    settings = process_session(settings, config)
+#
+#    if settings = include_sync:
+#        settings = process_sync(settings, config)
+#    if settings = include_queue:
+#        settings = process_chaind_queue(settings, config)
+#        settings = process_dispatch(settings, config)
+#        settings = process_token(settings, config)
+#
+#    settings = process_socket(settings, config)
+#
+#    return settings
