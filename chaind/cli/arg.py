@@ -13,8 +13,6 @@ def apply_flag(flag):
 
 def apply_arg(arg): 
     arg.add_long('session-id', 'session', help='Session to store state and data under')
-    arg.add_long('runtime-dir', 'session', help='Directory to store volatile data')
-    arg.add_long('data-dir', 'session', help='Directory to store persistent data')
     arg.add_long('socket-path', 'socket', help='UNIX socket path')
     arg.add_long('send-socket', 'socket_client', typ=bool, help='Send to UNIX socket')
     arg.add_long('token-module', 'token', help='Python module path to resolve tokens from identifiers')
