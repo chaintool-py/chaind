@@ -28,7 +28,7 @@ def process_session(settings, config):
     base_dir = os.getcwd()
     data_dir = config.get('SESSION_DATA_PATH')
     if data_dir == None:
-        data_dir = os.path.join(base_dir, '.chaind', 'chaind', settings.o.get('CHAIND_BACKEND'))
+        data_dir = os.path.join(base_dir, '.chaind', 'chaind', settings.get('CHAIND_BACKEND'))
     data_engine_dir = os.path.join(data_dir, config.get('CHAIND_ENGINE'))
     os.makedirs(data_engine_dir, exist_ok=True)
 
