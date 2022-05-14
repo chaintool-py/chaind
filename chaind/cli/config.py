@@ -2,8 +2,8 @@ def process_config(config, arg, args, flags):
     args_override = {}
     if arg.match('session', flags):
         args_override['SESSION_ID'] = getattr(args, 'session_id')
-        args_override['SESSION_RUNTIME_DIR'] = getattr(args, 'runtime_dir')
-        args_override['SESSION_DATA_DIR'] = getattr(args, 'data_dir')
+        args_override['SESSION_RUNTIME_DIR'] = getattr(args, 'runtime_path')
+        args_override['SESSION_DATA_DIR'] = getattr(args, 'state_path')
 
     if arg.match('socket', flags):
         args_override['SESSION_SOCKET_PATH'] = getattr(args, 'socket')
