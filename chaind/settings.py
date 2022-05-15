@@ -48,8 +48,16 @@ def process_session(settings, config):
         session_id = str(uuid.uuid4())
         make_default = True
 
+    chain_spec = settings.get('CHAIN_SPEC')
+    network_id_str = str(chain_spec.network_id())
     # create the session persistent dir
-    session_path = os.path.join(data_engine_dir, session_id)
+    session_path = os.path.join(
+            data_engine_dir,
+            chain_spec.arch(),
+            chain_spec.fork(),
+            network_id_str,
+            session_id,
+            )
     if make_default:
         fp = os.path.join(data_engine_dir, 'default')
         os.symlink(session_path, fp)
@@ -62,7 +70,14 @@ def process_session(settings, config):
     runtime_path = config.get('SESSION_RUNTIME_PATH')
     if runtime_path == None:
         runtime_path = os.path.join('/run', 'user', str(uid), 'chaind', settings.get('CHAIND_BACKEND'))
-    runtime_path = os.path.join(runtime_path, config.get('CHAIND_ENGINE'), session_id)
+    runtime_path = os.path.join(
+            runtime_path,
+            config.get('CHAIND_ENGINE'),
+            chain_spec.arch(),
+            chain_spec.fork(),
+            str(chain_spec.network_id()),
+            session_id,
+            )
     os.makedirs(runtime_path, exist_ok=True)
 
     settings.set('SESSION_RUNTIME_PATH', runtime_path)
@@ -71,7 +86,6 @@ def process_session(settings, config):
     settings.set('SESSION_ID', session_id)
 
     return settings
-
 
 
 def process_socket(settings, config):
