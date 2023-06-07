@@ -1,6 +1,6 @@
-chainlib~=0.3.0
-chainqueue~=0.2.0
-chainsyncer~=0.5.0
-confini~=0.6.1
-funga~=0.5.2
+chainlib~=0.4.16
+chainqueue~=0.2.4
+chainsyncer~=0.7.0
+confini~=0.6.4
+funga~=0.5.6
 pyxdg~=0.26

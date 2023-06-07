@@ -1,3 +1,5 @@
+- 0.4.0
+	* Upgrade dependencies (chainlib 0.4.x)
 - 0.3.1
 	* Change license to AGPL3 and copyright waived to public domain
 - 0.3.0
